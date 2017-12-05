@@ -211,6 +211,7 @@ module Database.PostgreSQL.LibPQ
     )
 where
 
+#include <pg_config_x86_64.h>
 #include <libpq-fe.h>
 #include <libpq/libpq-fs.h>
 #include "noticehandlers.h"
@@ -982,7 +983,9 @@ instance Enum ExecStatus where
     toEnum (#const PGRES_BAD_RESPONSE)   = BadResponse
     toEnum (#const PGRES_NONFATAL_ERROR) = NonfatalError
     toEnum (#const PGRES_FATAL_ERROR)    = FatalError
+#if PG_VERSION_NUM > 90200
     toEnum (#const PGRES_SINGLE_TUPLE)   = SingleTuple
+#endif
     toEnum _ = error "Database.PQ.Enum.ExecStatus.toEnum: bad argument"
 
     fromEnum EmptyQuery    = (#const PGRES_EMPTY_QUERY)
@@ -994,7 +997,11 @@ instance Enum ExecStatus where
     fromEnum BadResponse   = (#const PGRES_BAD_RESPONSE)
     fromEnum NonfatalError = (#const PGRES_NONFATAL_ERROR)
     fromEnum FatalError    = (#const PGRES_FATAL_ERROR)
+#if PG_VERSION_NUM > 90200
     fromEnum SingleTuple   = (#const PGRES_SINGLE_TUPLE)
+#else
+    fromEnum SingleTuple   = error "Database.PQ.Enum.ExecStatus.fromEnum: SingleTuple not supported"
+#endif
 
 -- | Returns the result status of the command.
 resultStatus :: Result
@@ -1819,8 +1826,11 @@ isnonblocking connection = enumFromConn connection c_PQisnonblocking
 -- reverts to normal after completion of the current query.
 setSingleRowMode :: Connection
                  -> IO Bool
+#if PG_VERSION_NUM > 90200
 setSingleRowMode connection = enumFromConn connection c_PQsetSingleRowMode
-
+#else
+setSingleRowMode _ = return False
+#endif
 
 data FlushStatus = FlushOk
                  | FlushFailed
@@ -2486,8 +2496,10 @@ foreign import ccall        "libpq-fe.h PQsetnonblocking"
 foreign import ccall unsafe "libpq-fe.h PQisnonblocking"
     c_PQisnonblocking :: Ptr PGconn -> IO CInt
 
+#if PG_VERSION_NUM > 90200
 foreign import ccall unsafe "libpq-fe.h PQsetSingleRowMode"
     c_PQsetSingleRowMode :: Ptr PGconn -> IO CInt
+#endif
 
 foreign import ccall        "libpq-fe.h PQgetResult"
     c_PQgetResult :: Ptr PGconn -> IO (Ptr PGresult)
