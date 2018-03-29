@@ -1,5 +1,5 @@
 Name:                postgresql-libpq
-Version:             0.9.4.0
+Version:             0.9.4.1
 Synopsis:            low-level binding to libpq
 
 Description:         This is a binding to libpq: the C application
@@ -20,6 +20,20 @@ Category:            Database
 Build-type:          Custom
 Extra-source-files:  cbits/noticehandlers.h
 Cabal-version:       >=1.8
+Tested-with:
+  GHC==7.0.4,
+  GHC==7.2.2,
+  GHC==7.4.2,
+  GHC==7.6.3,
+  GHC==7.8.4,
+  GHC==7.10.3,
+  GHC==8.0.2,
+  GHC==8.2.2,
+  GHC==8.4.1
+
+Custom-setup
+  setup-depends:
+    base >= 4.3 && <5, Cabal >= 1.10 && <2.3
 
 -- If true,  use pkg-config,  otherwise use the pg_config based build
 -- configuration
@@ -33,7 +47,7 @@ Library
   include-dirs:        cbits
   Exposed-modules:     Database.PostgreSQL.LibPQ
                        Database.PostgreSQL.LibPQ.Internal
-  Build-depends:       base >= 4 && < 5
+  Build-depends:       base >= 4.3 && < 5
                      , bytestring
 
   if !os(windows)
@@ -47,9 +61,17 @@ Library
   if flag(use-pkg-config)
     Pkgconfig-depends:   libpq
   else
-    Extra-Libraries:     pq
-    if os(openbsd)
-      Extra-Libraries:     crypto ssl
+    if os(windows)
+      -- Due to https://sourceware.org/bugzilla/show_bug.cgi?id=22948,
+      -- if we specify pq instead of libpq, then ld might link against
+      -- libpq.dll directly, which can lead to segfaults. As a temporary hack,
+      -- we force ld to link against the libpq.lib import library directly
+      -- by specifying libpq here.
+      Extra-Libraries:   libpq
+    else
+      Extra-Libraries:     pq
+      if os(openbsd)
+        Extra-Libraries:     crypto ssl
 
   -- Other-modules:
   Build-tools:       hsc2hs
@@ -61,4 +83,4 @@ source-repository head
 source-repository this
   type:     git
   location: https://github.com/lpsmith/postgresql-libpq
-  tag:      v0.9.4.0
+  tag:      v0.9.4.1
