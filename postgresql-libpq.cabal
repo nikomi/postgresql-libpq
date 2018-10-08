@@ -1,5 +1,5 @@
 Name:                postgresql-libpq
-Version:             0.9.4.1
+Version:             0.9.4.2
 Synopsis:            low-level binding to libpq
 
 Description:         This is a binding to libpq: the C application
@@ -9,11 +9,11 @@ Description:         This is a binding to libpq: the C application
                      backend server and to receive the results of
                      these queries.
 
-Homepage:            https://github.com/lpsmith/postgresql-libpq
+Homepage:            https://github.com/phadej/postgresql-libpq
 License:             BSD3
 License-file:        LICENSE
 Author:              Grant Monroe, Leon P Smith, Joey Adams
-Maintainer:          Leon P Smith <leon@melding-monads.com>
+Maintainer:          Oleg Grenrus <oleg.grenrus@iki.fi>
 Copyright:           (c) 2010 Grant Monroe
                      (c) 2011 Leon P Smith
 Category:            Database
@@ -29,11 +29,15 @@ Tested-with:
   GHC==7.10.3,
   GHC==8.0.2,
   GHC==8.2.2,
-  GHC==8.4.1
+  GHC==8.4.3,
+  GHC==8.6.1
+
+extra-source-files:
+  CHANGELOG.md
 
 Custom-setup
   setup-depends:
-    base >= 4.3 && <5, Cabal >= 1.10 && <2.3
+    base >= 4.3 && <5, Cabal >= 1.10 && <2.5
 
 -- If true,  use pkg-config,  otherwise use the pg_config based build
 -- configuration
@@ -47,19 +51,19 @@ Library
   include-dirs:        cbits
   Exposed-modules:     Database.PostgreSQL.LibPQ
                        Database.PostgreSQL.LibPQ.Internal
-  Build-depends:       base >= 4.3 && < 5
-                     , bytestring
+  Build-depends:       base       >=4.3     && <4.13
+                     , bytestring >=0.9.1.0 && <0.11
 
   if !os(windows)
-    Build-depends:     unix
+    Build-depends:     unix  >=2.4.2.0 && <2.8
 
   if os(windows)
-    Build-depends:     Win32
-
+    Build-depends:     Win32 >=2.2.0.2 && <2.7
 
   GHC-Options:       -Wall
+
   if flag(use-pkg-config)
-    Pkgconfig-depends:   libpq
+    Pkgconfig-depends:   libpq >=9.3
   else
     if os(windows)
       -- Due to https://sourceware.org/bugzilla/show_bug.cgi?id=22948,
@@ -76,11 +80,20 @@ Library
   -- Other-modules:
   Build-tools:       hsc2hs
 
+test-suite smoke
+  type:           exitcode-stdio-1.0
+  main-is:        Smoke.hs
+  hs-source-dirs: test
+  build-depends:
+    base,
+    bytestring,
+    postgresql-libpq
+
 source-repository head
   type:     git
-  location: https://github.com/lpsmith/postgresql-libpq
+  location: https://github.com/phadej/postgresql-libpq
 
 source-repository this
   type:     git
-  location: https://github.com/lpsmith/postgresql-libpq
-  tag:      v0.9.4.1
+  location: https://github.com/phadej/postgresql-libpq
+  tag:      v0.9.4.0
